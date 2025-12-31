@@ -1,0 +1,14 @@
+# Node
+node_modules/
+.env
+/dist
+
+# Local envs
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+
+# Editor
+.vscode/
+.idea/

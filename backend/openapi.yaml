@@ -1,0 +1,35 @@
+openapi: 3.0.0
+info:
+  title: Entrega Roteirizada API
+  version: 0.1.0
+paths:
+  /deliveries:
+    get:
+      summary: List deliveries
+      responses:
+        '200':
+          description: OK
+    post:
+      summary: Create delivery
+      requestBody:
+        required: true
+      responses:
+        '201':
+          description: Created
+  /deliveries/{id}/assign:
+    post:
+      summary: Assign to driver
+  /deliveries/{id}/proof:
+    post:
+      summary: Upload proof (multipart/form-data)
+components:
+  schemas:
+    Delivery:
+      type: object
+      properties:
+        id:
+          type: string
+        clientName:
+          type: string
+        address:
+          type: string

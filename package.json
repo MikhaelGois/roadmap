@@ -1,0 +1,10 @@
+{
+  "name": "entrega-roteirizada",
+  "private": true,
+  "scripts": {
+    "dev": "docker-compose up --build",
+    "backend:dev": "cd backend && pnpm install && pnpm dev",
+    "panel:dev": "cd frontend/panel && pnpm install && pnpm dev",
+    "pwa:dev": "cd frontend/driver-pwa && pnpm install && pnpm dev"
+  }
+}

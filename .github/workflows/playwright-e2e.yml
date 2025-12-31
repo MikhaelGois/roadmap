@@ -1,0 +1,75 @@
+name: Playwright E2E
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install pnpm
+        run: npm i -g pnpm
+
+      - name: Install Frontend (panel) dependencies
+        run: pnpm --prefix frontend/panel install
+
+      - name: Install Playwright browsers
+        run: pnpm --prefix frontend/panel exec playwright install --with-deps
+
+      - name: Start infra (postgres, redis, minio)
+        run: docker-compose up -d postgres redis minio
+
+      - name: Wait for Postgres
+        run: npx wait-on tcp:5432
+
+      - name: Install Backend dependencies
+        run: pnpm --prefix backend install
+
+      - name: Generate Prisma client
+        run: pnpm --prefix backend run prisma:generate
+
+      - name: Run migrations (deploy)
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/entregas_dev
+        run: pnpm --prefix backend run prisma:deploy
+
+      - name: Seed database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/entregas_dev
+        run: pnpm --prefix backend run seed
+
+      - name: Start backend dev server
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/entregas_dev
+        run: pnpm --prefix backend dev &
+
+      - name: Start Next.js dev server
+        run: pnpm --prefix frontend/panel dev &
+
+      - name: Wait for panel & backend to be ready
+        run: npx wait-on http://localhost:3000 http://localhost:4000
+
+      - name: Run Playwright tests
+        run: pnpm --prefix frontend/panel run e2e -- --reporter=list
+        env:
+          PLAYWRIGHT_BASE_URL: http://localhost:3000
+
+      - name: Upload Playwright artifacts (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            frontend/panel/playwright-report
+            frontend/panel/test-results
+            frontend/panel/.playwright

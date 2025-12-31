@@ -1,0 +1,21 @@
+```mermaid
+erDiagram
+    DRIVER ||--o{ DELIVERY : assigned_to
+    DRIVER {
+      string id PK
+      string name
+      string phone
+      string vehicle
+    }
+    DELIVERY {
+      string id PK
+      string clientName
+      string address
+      float lat
+      float lng
+      string phone
+      float value
+      string status
+      string proofUrl
+    }
+```

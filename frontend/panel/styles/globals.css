@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root{
+  --primary: #2563EB;
+  --ciano: #0EA5E9;
+  --success: #16A34A;
+  --bg: #F8FAFC;
+}
+
+html,body,#__next{height:100%}
+body{background:var(--bg);font-family:Inter,system-ui,-apple-system,"Segoe UI",Roboto,'Helvetica Neue',Arial}
+
+/* small helpers */
+.btn{@apply inline-flex items-center justify-center px-3 py-2 rounded-md text-white bg-primary}
+.input{@apply px-3 py-2 rounded-md border border-gray-200 bg-white}
+.card{@apply bg-white rounded-lg shadow-sm p-4 border border-gray-100}
+
+/* Toast animations */
+@keyframes toast-pop { from { transform: translateY(8px) scale(.98); opacity: 0 } to { transform: translateY(0) scale(1); opacity: 1 } }
+.fixed.right-4.bottom-20 > div { animation: toast-pop 220ms ease; }
+
+/* Toast action button styles */
+button[aria-label^="Ação"]{ background: rgba(255,255,255,0.9); }
