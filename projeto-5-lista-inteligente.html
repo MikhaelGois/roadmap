@@ -1,0 +1,1170 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <title>Entrega Roteirizada — Painel Mobile</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --primary: #2563EB;
+      --secondary: #0EA5E9;
+      --success: #16A34A;
+      --warning: #F59E0B;
+      --error: #DC2626;
+      --bg-light: #F8FAFC;
+      --bg-dark: #0F172A;
+      --card-bg: #ffffff;
+      --text-primary: #0F172A;
+      --text-muted: #64748B;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg-light);
+      color: var(--text-primary);
+      padding-bottom: 0;
+    }
+
+    /* Header */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      background: var(--primary);
+      color: white;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    header .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      border: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .icon-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Main */
+    main {
+      padding: 16px;
+      padding-bottom: 80px;
+    }
+
+    /* Sections */
+    section {
+      margin-bottom: 16px;
+    }
+
+    /* Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+      margin-bottom: 12px;
+    }
+
+    .card h2 {
+      margin: 0 0 12px;
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-muted);
+    }
+
+    .card p {
+      margin: 4px 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 16px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn.primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn.secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    .btn.secondary:hover {
+      background: #06b6d4;
+    }
+
+    .btn.success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn.success:hover {
+      background: #15803d;
+    }
+
+    .btn.outline {
+      background: transparent;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+    .btn.outline:hover {
+      background: #eef2ff;
+    }
+
+    /* Button Group */
+    .btn-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .btn-group .btn {
+      margin: 0;
+    }
+
+    /* Lists */
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .list-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .list-item:last-child {
+      border-bottom: none;
+    }
+
+    .list-item.completed {
+      opacity: 0.6;
+    }
+
+    .list-item.completed .item-name {
+      text-decoration: line-through;
+      color: var(--text-muted);
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .item-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .item-price {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--success);
+      min-width: 80px;
+      text-align: right;
+    }
+
+    .item-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .item-btn {
+      padding: 6px 8px;
+      border: none;
+      background: #eef2ff;
+      color: var(--primary);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    /* Badge */
+    .badge {
+      display: inline-block;
+      padding: 4px 8px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: var(--primary);
+    }
+
+    .badge.success {
+      background: #dcfce7;
+      color: #166534;
+    }
+
+    .badge.warning {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    /* Screens / Tabs */
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 19;
+      background: var(--card-bg);
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 64px;
+    }
+
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px;
+      text-decoration: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      flex: 1;
+      border: none;
+      background: none;
+    }
+
+    .nav-item.active {
+      color: var(--primary);
+    }
+
+    .nav-item .icon {
+      font-size: 20px;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 30;
+      align-items: flex-end;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      width: 100%;
+      border-radius: 12px 12px 0 0;
+      padding: 16px;
+      max-height: 80vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from {
+        transform: translateY(100%);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 18px;
+    }
+
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: #e5e7eb;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+
+    /* Forms */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 6px;
+      color: var(--text-primary);
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px #dbeafe;
+    }
+
+    /* Stats */
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Progress Bar */
+    .progress {
+      width: 100%;
+      height: 8px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 32px 16px;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #e5e7eb;
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* Responsive */
+    @media (min-width: 640px) {
+      main {
+        max-width: 540px;
+        margin: 0 auto;
+      }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 32px 16px;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .empty-state h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+      color: var(--text-primary);
+    }
+
+    .empty-state p {
+      margin: 0;
+      color: var(--text-muted);
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <h1 id="header-title">Entregas</h1>
+    <div class="actions">
+      <button class="icon-btn" aria-label="Buscar" onclick="openModal('modal-buscar')">🔍</button>
+      <button class="icon-btn" aria-label="Filtros" onclick="openModal('modal-filtros')">⚙️</button>
+      <button class="icon-btn" aria-label="Perfil">👤</button>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Tela 1: Dashboard -->
+    <section class="screen active" id="screen-dashboard">
+      <h2 style="margin-bottom: 16px; font-size: 18px; font-weight: 600;">Dashboard</h2>
+
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-value">24</div>
+          <div class="stat-label">Entregas Hoje</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">3</div>
+          <div class="stat-label">Em Rota</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">18</div>
+          <div class="stat-label">Entregues</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">97%</div>
+          <div class="stat-label">SLA</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Próximas Saídas</h2>
+        <div class="list">
+          <div class="list-item">
+            <div>
+              <div class="item-name">Saída 12:30</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Ana - Moto • 5 entregas</div>
+            </div>
+            <span class="badge">Em 15min</span>
+          </div>
+          <div class="list-item">
+            <div>
+              <div class="item-name">Saída 14:00</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Carlos - Carro • 8 entregas</div>
+            </div>
+            <span class="badge">Em 1h45</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Alertas</h2>
+        <div class="list">
+          <div class="list-item">
+            <div>
+              <div class="item-name" style="color: var(--error);">2 entregas atrasadas</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Cliente aguardando há mais de 30min</div>
+            </div>
+            <button class="item-btn" onclick="switchScreen('screen-entregas')">Ver</button>
+          </div>
+          <div class="list-item">
+            <div>
+              <div class="item-name" style="color: var(--warning);">5 entregas sem motorista</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Atribuir rota urgente</div>
+            </div>
+            <button class="item-btn" onclick="switchScreen('screen-roteirizacao')">Atribuir</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tela 2: Entregas -->
+    <section class="screen" id="screen-entregas">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; font-size: 18px;">Entregas</h2>
+        <button class="btn primary" onclick="openModal('modal-nova-entrega')" style="padding: 8px 16px; margin: 0;">＋ Nova</button>
+      </div>
+
+      <div class="searchbar" style="margin-bottom: 12px;">
+        <select class="input" aria-label="Filtrar status">
+          <option>Todos status</option>
+          <option>Nova</option>
+          <option>Em rota</option>
+          <option>Entregue</option>
+        </select>
+        <select class="input" aria-label="Filtrar motorista">
+          <option>Todos motoristas</option>
+          <option>Ana</option>
+          <option>Carlos</option>
+        </select>
+      </div>
+
+      <div class="list">
+        <div class="card" tabindex="0">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">#22 — Maria Souza</h3>
+            <span class="badge success">Em rota</span>
+          </div>
+          <p style="margin: 4px 0; font-size: 14px; color: var(--text-primary);">Av. Brasil, 121</p>
+          <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">ETA: 13:35 • Motorista: Ana</p>
+          <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">Valor: R$ 59,90</p>
+          <div class="btn-group" style="margin-top: 12px;">
+            <button class="btn outline" onclick="openModal('modal-detalhes-entrega')" style="margin: 0;">Ver detalhes</button>
+            <button class="btn success" style="margin: 0;">Marcar entregue</button>
+          </div>
+        </div>
+
+        <div class="card" tabindex="0">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">#21 — João Silva</h3>
+            <span class="badge warning">Nova</span>
+          </div>
+          <p style="margin: 4px 0; font-size: 14px; color: var(--text-primary);">R. Aroeiras, 45</p>
+          <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">ETA: 13:20 • Motorista: —</p>
+          <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">Valor: R$ 35,00</p>
+          <div class="btn-group" style="margin-top: 12px;">
+            <button class="btn outline" onclick="openModal('modal-detalhes-entrega')" style="margin: 0;">Ver detalhes</button>
+            <button class="btn secondary" onclick="switchScreen('screen-roteirizacao')" style="margin: 0;">Atribuir</button>
+          </div>
+        </div>
+
+        <div class="card" tabindex="0">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">#23 — Mercadinho Estrela</h3>
+            <span class="badge" style="background: #dcfce7; color: #166534;">Entregue</span>
+          </div>
+          <p style="margin: 4px 0; font-size: 14px; color: var(--text-primary);">R. das Flores, 300</p>
+          <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">Entregue às 14:10 • Motorista: Carlos</p>
+          <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">Valor: R$ 120,50</p>
+          <div class="btn-group" style="margin-top: 12px;">
+            <button class="btn outline" onclick="openModal('modal-detalhes-entrega')" style="margin: 0;">Ver detalhes</button>
+            <button class="btn outline" style="margin: 0;">Ver prova</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tela 3: Roteirização -->
+    <section class="screen" id="screen-roteirizacao">
+      <h2 style="margin-bottom: 16px; font-size: 18px; font-weight: 600;">Roteirização</h2>
+
+      <div class="card">
+        <h3>Configuração</h3>
+        <div class="form-group">
+          <label>Motorista/Veículo</label>
+          <select class="input">
+            <option>Ana - Moto (capacidade 8)</option>
+            <option>Carlos - Carro (capacidade 10)</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ponto de partida</label>
+          <select class="input">
+            <option>Depósito - R. Central, 100</option>
+          </select>
+        </div>
+
+        <button class="btn primary" onclick="gerarRota()">Gerar Rota Otimizada</button>
+      </div>
+
+      <div class="card" id="rota-resultado" style="display: none;">
+        <h3>Rota Gerada</h3>
+        <div id="map-roteirizacao" style="width: 100%; height: 280px; border-radius: 8px; margin-bottom: 12px; z-index: 1;"></div>
+        
+        <p style="margin-bottom: 12px; font-size: 14px; color: var(--text-muted);">Distância: 12.3 km • Tempo: 48 min</p>
+
+        <div class="list">
+          <div class="list-item">
+            <span style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; margin-right: 8px;">1</span>
+            <div style="flex: 1;">
+              <div class="item-name">Maria Souza</div>
+              <div style="font-size: 12px; color: var(--text-muted);">Av. Brasil, 121 • ETA 13:35</div>
+            </div>
+          </div>
+          <div class="list-item">
+            <span style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; margin-right: 8px;">2</span>
+            <div style="flex: 1;">
+              <div class="item-name">João Silva</div>
+              <div style="font-size: 12px; color: var(--text-muted);">R. Aroeiras, 45 • ETA 13:50</div>
+            </div>
+          </div>
+          <div class="list-item">
+            <span style="background: var(--primary); color: white; width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 12px; margin-right: 8px;">3</span>
+            <div style="flex: 1;">
+              <div class="item-name">Mercadinho Estrela</div>
+              <div style="font-size: 12px; color: var(--text-muted);">R. das Flores, 300 • ETA 14:10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="btn-group" style="margin-top: 12px;">
+          <button class="btn primary" style="margin: 0;" onclick="atribuirRota()">Atribuir Rota</button>
+          <button class="btn secondary" style="margin: 0;">Exportar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tela 4: Mapa Live -->
+    <section class="screen" id="screen-mapa">
+      <h2 style="margin-bottom: 16px; font-size: 18px; font-weight: 600;">Mapa (Live)</h2>
+
+      <div class="searchbar" style="margin-bottom: 12px;">
+        <select class="input" aria-label="Filtrar motorista">
+          <option>Todos motoristas</option>
+          <option>Ana</option>
+          <option>Carlos</option>
+        </select>
+        <select class="input" aria-label="Filtrar status">
+          <option>Todos status</option>
+          <option>Em rota</option>
+          <option>Atrasados</option>
+        </select>
+      </div>
+
+      <div class="card">
+        <div id="map-live" style="width: 100%; height: 350px; border-radius: 8px; margin-bottom: 12px; z-index: 1;"></div>
+
+        <h3>Motoristas Ativos</h3>
+        <div class="list">
+          <div class="list-item">
+            <div style="flex: 1;">
+              <div class="item-name">Ana — Moto</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Em rota • 5/8 entregas • Próxima em 8min</div>
+            </div>
+            <span class="badge success">Ativo</span>
+          </div>
+          <div class="list-item">
+            <div style="flex: 1;">
+              <div class="item-name">Carlos — Carro</div>
+              <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">Livre • 0/10 entregas</div>
+            </div>
+            <span class="badge">Livre</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tela 5: Motoristas -->
+    <section class="screen" id="screen-motoristas">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="margin: 0; font-size: 18px;">Motoristas</h2>
+        <button class="btn primary" style="padding: 8px 16px; margin: 0;">＋ Adicionar</button>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Ana Silva</h3>
+            <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">Moto • Capacidade: 8 itens</p>
+          </div>
+          <span class="badge success">Em rota</span>
+        </div>
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-value">5/8</div>
+            <div class="stat-label">Entregas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">98%</div>
+            <div class="stat-label">SLA</div>
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top: 12px;">
+          <button class="btn outline" style="margin: 0;">Ver Detalhes</button>
+          <button class="btn secondary" onclick="switchScreen('screen-roteirizacao')" style="margin: 0;">Atribuir Entregas</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Carlos Mendes</h3>
+            <p style="margin: 4px 0; font-size: 13px; color: var(--text-muted);">Carro • Capacidade: 10 itens</p>
+          </div>
+          <span class="badge">Livre</span>
+        </div>
+        <div class="stats">
+          <div class="stat-card">
+            <div class="stat-value">0/10</div>
+            <div class="stat-label">Entregas</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">95%</div>
+            <div class="stat-label">SLA</div>
+          </div>
+        </div>
+        <div class="btn-group" style="margin-top: 12px;">
+          <button class="btn outline" style="margin: 0;">Ver Detalhes</button>
+          <button class="btn secondary" onclick="switchScreen('screen-roteirizacao')" style="margin: 0;">Atribuir Entregas</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav" role="tablist" aria-label="Navegação principal">
+    <button class="nav-item active" onclick="switchScreen('screen-dashboard'); setActiveNav(this)">
+      <span class="icon">📊</span>
+      <span>Dashboard</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-entregas'); setActiveNav(this)">
+      <span class="icon">📦</span>
+      <span>Entregas</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-roteirizacao'); setActiveNav(this)">
+      <span class="icon">🗺️</span>
+      <span>Rotas</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-mapa'); setActiveNav(this)">
+      <span class="icon">🌍</span>
+      <span>Mapa</span>
+    </button>
+    <button class="nav-item" onclick="switchScreen('screen-motoristas'); setActiveNav(this)">
+      <span class="icon">👥</span>
+      <span>Motoristas</span>
+    </button>
+  </nav>
+
+  <!-- Modal: Buscar -->
+  <div class="modal" id="modal-buscar">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>🔍 Buscar</h2>
+        <button class="modal-close" onclick="closeModal('modal-buscar')">✖️</button>
+      </div>
+
+      <div class="form-group">
+        <input type="text" placeholder="Cliente, endereço ou telefone..." />
+      </div>
+
+      <button class="btn outline" onclick="closeModal('modal-buscar')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Modal: Filtros -->
+  <div class="modal" id="modal-filtros">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⚙️ Filtros</h2>
+        <button class="modal-close" onclick="closeModal('modal-filtros')">✖️</button>
+      </div>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select class="input">
+          <option>Todos</option>
+          <option>Nova</option>
+          <option>Em rota</option>
+          <option>Entregue</option>
+          <option>Falha</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Motorista</label>
+        <select class="input">
+          <option>Todos</option>
+          <option>Ana</option>
+          <option>Carlos</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" class="input" />
+      </div>
+
+      <div class="btn-group">
+        <button class="btn primary" style="margin: 0;" onclick="closeModal('modal-filtros')">Aplicar</button>
+        <button class="btn outline" style="margin: 0;" onclick="closeModal('modal-filtros')">Limpar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Nova Entrega -->
+  <div class="modal" id="modal-nova-entrega">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>＋ Nova Entrega</h2>
+        <button class="modal-close" onclick="closeModal('modal-nova-entrega')">✖️</button>
+      </div>
+
+      <div class="form-group">
+        <label>Cliente</label>
+        <input type="text" placeholder="Nome do cliente" />
+      </div>
+
+      <div class="form-group">
+        <label>Endereço</label>
+        <input type="text" placeholder="Rua, número, bairro" />
+      </div>
+
+      <div class="form-group">
+        <label>Telefone</label>
+        <input type="text" placeholder="(00) 00000-0000" />
+      </div>
+
+      <div class="form-group">
+        <label>Valor</label>
+        <input type="number" placeholder="0.00" step="0.01" />
+      </div>
+
+      <div class="form-group">
+        <label>Janela de Entrega</label>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+          <input type="time" class="input" />
+          <input type="time" class="input" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Observações</label>
+        <textarea rows="3" placeholder="Ex: Portaria, deixar na recepção"></textarea>
+      </div>
+
+      <div class="btn-group">
+        <button class="btn primary" style="margin: 0;" onclick="closeModal('modal-nova-entrega')">Criar Entrega</button>
+        <button class="btn outline" style="margin: 0;" onclick="closeModal('modal-nova-entrega')">Cancelar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Detalhes Entrega -->
+  <div class="modal" id="modal-detalhes-entrega">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Entrega #22</h2>
+        <button class="modal-close" onclick="closeModal('modal-detalhes-entrega')">✖️</button>
+      </div>
+
+      <p><strong>Cliente:</strong> Maria Souza</p>
+      <p><strong>Telefone:</strong> (19) 99999-9999</p>
+      <p><strong>Endereço:</strong> Av. Brasil, 121, Sumaré-SP</p>
+      <p><strong>Janela:</strong> 13:00–14:00</p>
+      <p><strong>Valor:</strong> R$ 59,90</p>
+      <p><strong>Observações:</strong> Portaria; deixar na recepção</p>
+
+      <div class="form-group">
+        <label>Status</label>
+        <select class="input">
+          <option>Nova</option>
+          <option selected>Em rota</option>
+          <option>Entregue</option>
+          <option>Falha</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Motorista</label>
+        <select class="input">
+          <option>—</option>
+          <option selected>Ana</option>
+          <option>Carlos</option>
+        </select>
+      </div>
+
+      <h3 style="margin: 16px 0 8px;">Histórico</h3>
+      <div class="list">
+        <div class="list-item">
+          <div style="font-size: 13px;">
+            <div class="item-name">Atribuída a Ana</div>
+            <div style="color: var(--text-muted); margin-top: 4px;">12:40</div>
+          </div>
+        </div>
+        <div class="list-item">
+          <div style="font-size: 13px;">
+            <div class="item-name">Saída do depósito</div>
+            <div style="color: var(--text-muted); margin-top: 4px;">12:50</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="btn-group" style="margin-top: 16px;">
+        <button class="btn primary" style="margin: 0;">Iniciar Rota</button>
+        <button class="btn success" style="margin: 0;" onclick="closeModal('modal-detalhes-entrega')">Marcar Entregue</button>
+      </div>
+
+      <button class="btn outline" style="margin-top: 8px;" onclick="closeModal('modal-detalhes-entrega')">Fechar</button>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- JavaScript -->
+  <script>
+    let mapRoteirizacao = null;
+    let mapLive = null;
+
+    function switchScreen(screenId) {
+      // Hide all screens
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      // Show selected screen
+      document.getElementById(screenId).classList.add('active');
+
+      // Update header title
+      const titles = {
+        'screen-dashboard': 'Dashboard',
+        'screen-entregas': 'Entregas',
+        'screen-roteirizacao': 'Roteirização',
+        'screen-mapa': 'Mapa (Live)',
+        'screen-motoristas': 'Motoristas'
+      };
+      document.getElementById('header-title').textContent = titles[screenId] || 'Entrega Roteirizada';
+
+      // Scroll to top
+      window.scrollTo(0, 0);
+
+      // Initialize maps when screens are shown
+      if (screenId === 'screen-mapa' && !mapLive) {
+        setTimeout(() => initMapLive(), 100);
+      }
+    }
+
+    function openModal(modalId) {
+      document.getElementById(modalId).classList.add('active');
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function setActiveNav(element) {
+      document.querySelectorAll('.nav-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      element.classList.add('active');
+    }
+
+    function gerarRota() {
+      document.getElementById('rota-resultado').style.display = 'block';
+      
+      // Initialize map for roteirizacao
+      if (!mapRoteirizacao) {
+        setTimeout(() => {
+          initMapRoteirizacao();
+          alert('✅ Rota otimizada gerada!\nDistância: 12.3 km • Tempo: 48 min');
+        }, 100);
+      } else {
+        alert('✅ Rota otimizada gerada!\nDistância: 12.3 km • Tempo: 48 min');
+      }
+    }
+
+    function initMapRoteirizacao() {
+      // Center: Sumaré-SP (example city)
+      mapRoteirizacao = L.map('map-roteirizacao').setView([-22.7219, -47.2669], 14);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(mapRoteirizacao);
+
+      // Delivery points
+      const deliveries = [
+        { lat: -22.7219, lng: -47.2669, name: '1. Maria Souza', address: 'Av. Brasil, 121' },
+        { lat: -22.7289, lng: -47.2589, name: '2. João Silva', address: 'R. Aroeiras, 45' },
+        { lat: -22.7159, lng: -47.2749, name: '3. Mercadinho', address: 'R. das Flores, 300' }
+      ];
+
+      // Add markers
+      deliveries.forEach((delivery, index) => {
+        const marker = L.marker([delivery.lat, delivery.lng], {
+          icon: L.divIcon({
+            className: 'custom-marker',
+            html: `<div style="background: #2563EB; color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);">${index + 1}</div>`,
+            iconSize: [28, 28]
+          })
+        }).addTo(mapRoteirizacao);
+        
+        marker.bindPopup(`<strong>${delivery.name}</strong><br/>${delivery.address}`);
+      });
+
+      // Draw route line
+      const routeCoords = deliveries.map(d => [d.lat, d.lng]);
+      L.polyline(routeCoords, {
+        color: '#2563EB',
+        weight: 3,
+        opacity: 0.7
+      }).addTo(mapRoteirizacao);
+
+      // Fit bounds
+      mapRoteirizacao.fitBounds(routeCoords);
+    }
+
+    function initMapLive() {
+      // Center: Sumaré-SP
+      mapLive = L.map('map-live').setView([-22.7219, -47.2669], 13);
+
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+      }).addTo(mapLive);
+
+      // Motoristas (drivers)
+      const drivers = [
+        { lat: -22.7259, lng: -47.2639, name: 'Ana', vehicle: 'Moto', status: 'Em rota' },
+        { lat: -22.7119, lng: -47.2819, name: 'Carlos', vehicle: 'Carro', status: 'Livre' }
+      ];
+
+      drivers.forEach(driver => {
+        const icon = driver.status === 'Em rota' ? '🏍️' : '🚗';
+        const color = driver.status === 'Em rota' ? '#16A34A' : '#64748B';
+        
+        const marker = L.marker([driver.lat, driver.lng], {
+          icon: L.divIcon({
+            className: 'custom-marker-driver',
+            html: `<div style="background: ${color}; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; border: 3px solid white; box-shadow: 0 2px 6px rgba(0,0,0,0.3);">${icon}</div>`,
+            iconSize: [36, 36]
+          })
+        }).addTo(mapLive);
+        
+        marker.bindPopup(`<strong>${driver.name}</strong><br/>${driver.vehicle} • ${driver.status}`);
+      });
+
+      // Delivery points
+      const deliveries = [
+        { lat: -22.7219, lng: -47.2669, name: 'Maria Souza', status: 'Em rota' },
+        { lat: -22.7289, lng: -47.2589, name: 'João Silva', status: 'Nova' },
+        { lat: -22.7159, lng: -47.2749, name: 'Mercadinho', status: 'Entregue' }
+      ];
+
+      deliveries.forEach(delivery => {
+        const colors = {
+          'Nova': '#F59E0B',
+          'Em rota': '#2563EB',
+          'Entregue': '#16A34A'
+        };
+        
+        L.circleMarker([delivery.lat, delivery.lng], {
+          radius: 8,
+          fillColor: colors[delivery.status],
+          color: 'white',
+          weight: 2,
+          opacity: 1,
+          fillOpacity: 0.9
+        }).addTo(mapLive).bindPopup(`<strong>${delivery.name}</strong><br/>Status: ${delivery.status}`);
+      });
+    }
+
+    function atribuirRota() {
+      alert('✅ Rota atribuída a Ana com sucesso!\n3 entregas foram adicionadas à sua rota.');
+      switchScreen('screen-entregas');
+    }
+
+    // Close modals when clicking outside
+    document.querySelectorAll('.modal').forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('active');
+        }
+      });
+    });
+  </script>
+</body>
+</html>
